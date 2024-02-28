@@ -1,4 +1,4 @@
-# Gen Design
+# Design Agentcy 🧑🏽‍🎨
 
 ## Description
 
