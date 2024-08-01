@@ -1,5 +1,7 @@
 .venv
+.env
 *workspace
 _Archive
 .DS_Store
 files/
+/drawbot
