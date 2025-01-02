@@ -4,43 +4,46 @@ import os
 import tempfile
 
 from drawBot.misc import executeExternalProcess, getExternalToolPath
-from pygifsicle import gifsicle
 
-def generateGif(sourcePaths, destPath, delays, loop=True):
-    options = ["--colors", "256"]
+
+def generateGif(inputPaths, outputPath, delays, loop=True):
+    # Try to find gifsicle in system path first
+    gifsicle = shutil.which('gifsicle')
+    if not gifsicle:
+        # Fallback to DrawBot's bundled gifsicle
+        from drawBot.misc import getExternalToolPath
+        root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        gifsicle = getExternalToolPath(root, "gifsicle")
+    
+    print(f"Using gifsicle at: {gifsicle}")
+    
+    cmds = [gifsicle, "--no-warnings", "--disposal=none"]
     if loop:
-        options.append("--loop")
-    
-    for i, delay in enumerate(delays):
-        options.extend(["--delay", str(delay)])
-    
-    gifsicle(
-        sources=sourcePaths,
-        destination=destPath,
-        optimize=False,
-        colors=256,
-        options=options
-    )
-    
-    # remove the temp input gifs
-    for inputPath in sourcePaths:
-        os.remove(inputPath)
+        cmds.extend(["--loopcount=forever"])
+    for inputPath, delay in zip(inputPaths, delays):
+        cmds.extend(["--delay", "%i" % delay, inputPath])
+    cmds.append("--output")
+    cmds.append(outputPath)
+    print(f"Running command: {' '.join(cmds)}")
+    executeExternalProcess(cmds)
 
 
 _explodedGifCache = {}
 
 
 def _explodeGif(path):
+    gifsiclePath = getExternalToolPath(os.path.dirname(__file__), "gifsicle")
     if isinstance(path, AppKit.NSURL):
         path = path.path()
     destRoot = tempfile.mkdtemp()
-    
-    gifsicle(
-        sources=[path],
-        destination=destRoot,
-        explode=True
-    )
-    
+    cmds = [
+        gifsiclePath,
+        # explode
+        "--explode",
+        # source path
+        path
+    ]
+    executeExternalProcess(cmds, cwd=destRoot)
     files = os.listdir(destRoot)
     _explodedGifCache[path] = dict(
         source=destRoot,

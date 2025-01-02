@@ -1,52 +1,55 @@
-[tool.poetry]
-name = "drawbot"
-version = "1.0.0"  # Update this as needed
-description = "DrawBot is a powerful tool that invites you to write simple Python scripts to generate two-dimensional graphics."
-authors = ["Just van Rossum <frederik@typemytype.com>", "Erik van Blokland", "Frederik Berlaen"]
-license = "BSD"
-homepage = "http://drawbot.com"
+[project]
+name = "drawbot-redux"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11.6"
+dependencies = [
+    "anthropic>=0.42.0",
+    "attrs>=23.1.0",
+    "autopep8>=2.3.1",
+    "black==23.10.0",
+    "booleanoperations>=0.9.0",
+    "brotli>=1.0.9",
+    "cocoa-vanilla==0.5.0",
+    "compositor",
+    "corefoundationasyncio>=0.0.1",
+    "defcon>=0.10.3",
+    "defconappkit",
+    "delocate==0.10.7",
+    "drawbot",
+    "feapyfofum",
+    "featools2",
+    "fontparts",
+    "fontpens",
+    "fonttools[lxml,type1,ufo,unicode,woff]>=4.39.3",
+    "fs>=2.4.16",
+    "jedi>=0.18.2",
+    "mutatormath>=3.0.1",
+    "packaging>=23.1",
+    "pillow==10.1.0",
+    "pip>=23.1.2",
+    "py2app>=0.27",
+    "pygifsicle>=1.1.0",
+    "pygments>=2.15.1",
+    "pyobjc>=9.0",
+    "pytz>=2023.3",
+    "setuptools>=45.2.0",
+    "ufo-extractor",
+    "ufo2fdk",
+    "ufo2svg",
+    "wofftools",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.8"  # Updated to Python 3.8 or higher
-setuptools = ">=45.2.0"
-packaging = "^23.1"
-pyobjc = "^9.0"
-corefoundationasyncio = "^0.0.1"
-py2app = "^0.27"
-cocoa-vanilla = "0.5.0"
-defcon = "^0.10.3"
-fontTools = {extras = ["ufo", "lxml", "woff", "unicode", "type1"], version = "^4.39.3"}
-fs = "^2.4.16"
-brotli = "^1.0.9"
-pygments = "^2.15.1"
-jedi = "^0.18.2"
-pillow = "10.1.0"
-attrs = "^23.1.0"
-booleanOperations = "^0.9.0"
-mutatorMath = "^3.0.1"
-pip = "^23.1.2"
-black = "23.10.0"
-pytz = "^2023.3"
-delocate = "0.10.7"
-pygifsicle = "^1.1.0"
-
-# Git dependencies (with corrected package name)
-defconAppKit = {git = "https://github.com/robotools/defconAppKit.git"}
-fontParts = {git = "https://github.com/robotools/fontParts.git"}
-fontPens = {git = "https://github.com/robotools/fontPens.git"}
-woffTools = {git = "https://github.com/typesupply/woffTools.git"}
-compositor = {git = "https://github.com/robotools/compositor.git"}
-ufo-extractor = {git = "https://github.com/robotools/extractor.git"}
-ufo2svg = {git = "https://github.com/typesupply/ufo2svg.git"}
-ufo2fdk = {git = "https://github.com/robotools/ufo2fdk.git"}
-feaPyFoFum = {git = "https://github.com/typesupply/feaPyFoFum.git"}
-feaTools2 = {git = "https://github.com/typesupply/feaTools2.git"}
-
-[tool.poetry.scripts]
-# Add any scripts if you have entry points
-# Example:
-# drawbot = "drawbot:main"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.uv.sources]
+defconappkit = { git = "https://github.com/robotools/defconAppKit.git" }
+fontparts = { git = "https://github.com/robotools/fontParts.git" }
+fontpens = { git = "https://github.com/robotools/fontPens.git" }
+wofftools = { git = "https://github.com/typesupply/woffTools.git" }
+compositor = { git = "https://github.com/robotools/compositor.git" }
+ufo-extractor = { git = "https://github.com/robotools/extractor.git" }
+ufo2svg = { git = "https://github.com/typesupply/ufo2svg.git" }
+ufo2fdk = { git = "https://github.com/robotools/ufo2fdk.git" }
+feapyfofum = { git = "https://github.com/typesupply/feaPyFoFum.git" }
+featools2 = { git = "https://github.com/typesupply/feaTools2.git" }
+drawbot = { path = "drawBot", editable = true }
