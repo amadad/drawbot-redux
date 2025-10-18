@@ -1,6 +1,48 @@
-.venv
+# Virtual environment
+.venv/
+
+# Local config
 .env
+
+# VS Code
 *workspace
-_Archive
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.pyc
+*.pyo
+
+# DrawBot package (installed in .venv, not in project)
+drawBot/
+
+# Output directories (generated files)
+output/
+
+# Assets (large files, store separately)
+assets/
+
+# Build artifacts
+*.pdf
+*.png
+*.jpg
+*.gif
+*.mp4
+*.svg
+
+# AI agent memory
+.goose/
+.aider*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
-files/
+Thumbs.db

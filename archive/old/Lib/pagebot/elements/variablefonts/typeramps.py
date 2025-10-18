@@ -1,0 +1,206 @@
+#!/usr/bin/env python3
+# -*- coding: UTF-8 -*-
+# -----------------------------------------------------------------------------
+#
+#     P A G E B O T
+#
+#     Copyright (c) 2016+ Buro Petr van Blokland + Claudia Mens
+#     www.pagebot.io
+#     Licensed under MIT conditions
+#
+#     Supporting DrawBot, www.drawbot.com
+#     Supporting Flat, xxyxyz.org/flat
+# -----------------------------------------------------------------------------
+#
+#	  fonticon.py
+#
+#     Draw the icon with optional information of the included font.
+#
+
+from pagebot.constants import ORIGIN
+from pagebot.elements.element import Element
+from pagebot.toolbox.units import pointOffset, pt, upt
+from pagebot.toolbox.color import blackColor, noColor
+
+class FontIcon(Element):
+    """Showing the specified font(sub variable font) in the form of an icon
+    showing optional information in different sizes and styles.
+
+    >>> from pagebot.fonttoolbox.objects.font import getFont
+    >>> from pagebot.fonttoolbox.fontpaths import getTestFontsPath
+    >>> path = getTestFontsPath() + '/google/roboto/Roboto-Regular.ttf' # We know this exists in the PageBot repository
+    >>> font = getFont(path)
+    >>> fi = FontIcon(font, w=120, h=160, title="Roboto Regular") # Numbers for (w, h) convert to pt.
+    >>> fi.title
+    'Roboto Regular'
+    >>> fi.size
+    (120pt, 160pt)
+
+    """
+    LABEL_TRACKING = 0.02
+    LABEL_RLEADING = 1.3
+
+    def __init__(self, f, name=None, label=None, title=None, eId=None, c='F',
+            s=1, strokeWidth=None, stroke=noColor, earSize=None, earLeft=True,
+            earFill=None, cFill=None, cStroke=None, cStrokeWidth=None,
+            labelFont=None, labelFontSize=None, titleFont=None,
+            titleFontSize=None, show=True, **kwargs):
+        """
+        >>> from pagebot.fonttoolbox.objects.font import getFont
+        >>> from pagebot.fonttoolbox.fontpaths import getTestFontsPath
+        >>> from pagebot import getContext
+        >>> from pagebot.elements import newRect
+        >>> from pagebot.document import Document
+        >>> from pagebot.toolbox.color import color
+        >>> c = getContext()
+        >>> w, h = 300, 400
+        >>> doc = Document(w=w, h=h, autoPages=1, padding=30, context=c)
+        >>> page = doc[1]
+        >>> path = getTestFontsPath() + '/google/roboto/Roboto-Regular.ttf' # We know this exists in the PageBot repository
+        >>> font = getFont(path)
+        >>> iw, ih = w/4, h/4
+        >>> x, y = w/8, h/8
+        >>> fi = FontIcon(font, x=x, y=y, w=iw, h=ih, name="40k", earSize=0.3, earLeft=True, parent=page, stroke=blackColor, strokeWidth=3)
+        >>> bg = newRect(x=w/2, w=w/2, h=h/2, fill=blackColor,parent=page)
+        >>> fi = FontIcon(font, x=x, y=y, w=iw, h=ih, name="40k", c="H", cFill=color(0.5), earSize=0.3, earLeft=True, earFill=None, fill=color(1,0,0,0.5), parent=bg, stroke=color(1), strokeWidth=3)
+        >>> doc.export('_export/FontIconTest.pdf')
+        >>> # FIXME: problem rasterizing jpeg in Flat...
+        >>> # File "/Users/michiel/VirtualEnvironments/pagebot/PageBotFlat/flat/rasterizer.py", line 430, in rasterize
+        >>> # data[i] = (c0*alpha + data[i]*v + 127)//255
+        >>> # TypeError: 'float' object cannot be interpreted as an integer
+
+        >>> #doc.export('_export/FontIconTest.jpg')
+        """
+
+        Element.__init__(self,  **kwargs)
+        self.f = f # Font instance
+        if title is not None:
+            self.title = title or "%s %s" % (f.info.familyName, f.info.styleName)
+        self.titleFont = titleFont, labelFont or f
+        self.titleFontSize = pt(28)
+        self.labelFont = labelFont or f
+        self.labelFontSize = labelFontSize or pt(10)
+        self.label = label # Optiona second label line
+        self.c = c # Character(s) in the icon.
+        if cFill is None:
+            cFill = blackColor
+        self.cFill = cFill
+        if cStroke is None:
+            cStroke = blackColor
+        self.cStroke = cStroke
+        self.cStrokeWidth = cStrokeWidth or pt(1)
+        self.scale = s
+        self.show = show
+        if stroke is not None:
+            self.style["stroke"] = stroke
+        if strokeWidth is not None:
+            self.style["strokeWidth"] = strokeWidth
+        self.earSize = earSize or 0.25 # 1/4 of width
+        self.earLeft = earLeft
+        if earFill is None:
+            earFill = self.css("fill")
+        self.earFill = earFill
+
+    def build(self, view, origin=ORIGIN, **kwargs):
+        """Default drawing method just drawing the frame.
+        Probably will be redefined by inheriting element classes."""
+        p = pointOffset(self.origin, origin)
+        p = self._applyScale(view, p)
+        px, py, _ = p = self._applyAlignment(p) # Ignore z-axis for now.
+        self.draw(view, p)
+        self.buildChildElements(view, p, **kwargs)
+        self._restoreScale(view)
+        view.drawElementInfo(self, origin) # Depends on flag 'view.showElementInfo'
+
+    def draw(self, view, p):
+        if not self.show:
+            return
+        w = self.w # Width of the icon
+        h = self.h # Height of the icon
+        e = w*self.earSize # Ear size fraction of the width
+
+        x,y = p[0], p[1]
+        c = self.context
+
+        c.newPath()
+        c.moveTo((0, 0))
+        if self.earLeft:
+            c.lineTo((0, h-e))
+            c.lineTo((e, h))
+            c.lineTo((w, h))
+
+        else:
+            c.lineTo((0, h))
+            c.lineTo((w-e, h))
+            c.lineTo((w, h-e))
+        c.lineTo((w, 0))
+        c.lineTo((0, 0))
+        c.closePath()
+        c.save()
+        c.fill(self.css("fill"))
+        c.stroke(self.css("stroke"), self.css("strokeWidth"))
+        c.translate(x, y)
+        c.drawPath()
+
+        c.newPath()
+        if self.earLeft:
+            #draw ear
+            c.moveTo((e, h))
+            c.lineTo((e, h-e))
+            c.lineTo((0, h-e))
+            c.lineTo((e, h))
+
+        else:
+            #draw ear
+            c.moveTo((w-e, h))
+            c.lineTo((w-e, h-e))
+            c.lineTo((w, h-e))
+            c.lineTo((w-e, h))
+        c.closePath()
+        c.fill(self.earFill)
+        c.lineJoin("bevel")
+        c.drawPath()
+
+        labelSize = e
+        bs = c.newString(self.c,
+                               style=dict(font=self.f.path,
+                                          textFill=self.cFill,
+                                          textStroke=self.cStroke,
+                                          textStrokeWidth=self.cStrokeWidth,
+                                          fontSize=h*2/3))
+        tw, th = bs.textSize
+        c.text(bs, (w/2-tw/2, h/2-th/3.2))
+
+        if self.title:
+            bs = c.newString(self.title,
+                                   style=dict(font=self.labelFont.path,
+                                              textFill=blackColor,
+                                              tracking=self.LABEL_TRACKING,
+                                              fontSize=labelSize))
+            tw, th = bs.textSize
+            c.text(bs, (w/2-tw/2, self.h+th/2))
+
+        y -= upt(self.LABEL_RLEADING, base=labelSize)
+        if self.name:
+            bs = c.newString(self.name,
+                                   style=dict(font=self.labelFont.path,
+                                              textFill=blackColor,
+                                              tracking=self.LABEL_TRACKING,
+                                              fontSize=labelSize))
+            tw, th = bs.textSize
+            c.text(bs, (w/2-tw/2, y))
+            y -= upt(self.LABEL_RLEADING, base=labelSize)
+        if self.label:
+            bs = c.newString(self.label,
+                                   style=dict(font=self.labelFont.path,
+                                              textFill=blackColor,
+                                              tracking=self.LABEL_TRACKING,
+                                              fontSize=labelSize))
+            tw, th = bs.textSize
+            c.text(bs, (w/2-tw/2, y))
+        c.restore()
+
+if __name__ == '__main__':
+    import doctest
+    import sys
+    sys.exit(doctest.testmod()[0])

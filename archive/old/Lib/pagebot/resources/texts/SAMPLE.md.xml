@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document><p>~~~<br />
+from pagebot.elements import *
+from pagebot.conditions import *
+from pagebot.contributions.filibuster.blurb import blurb<br />
+box = newText(parent=page, name='Content', conditions=[Fit2Height(), Fit2ColSpan(0, 2)])<br />
+box.bs += doc.context.newString(blurb.getBlurb('_headline')+'\n')<br />
+page.solve()</p>
+<p>~~~</p>
+<h2>Headline</h2>
+<h3>H3 Headline</h3>
+<p>~~~<br />
+box.bs += doc.context.newString(blurb.getBlurb('article')+'\n')<br />
+page = page.next<br />
+box = newText(parent=page, name='Content', conditions=[Fit()])<br />
+page.solve()</p>
+<p>box.bs += doc.context.newString(blurb.getBlurb('article')+'\n')</p>
+<p>~~~</p></document>

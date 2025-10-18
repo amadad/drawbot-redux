@@ -3,53 +3,68 @@ name = "drawbot-redux"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.11.6"
+requires-python = ">=3.11"
 dependencies = [
-    "anthropic>=0.42.0",
-    "attrs>=23.1.0",
-    "autopep8>=2.3.1",
-    "black==23.10.0",
+    "attrs>=25.3.0",
     "booleanoperations>=0.9.0",
-    "brotli>=1.0.9",
+    "brotli>=1.1.0",
     "cocoa-vanilla==0.5.0",
     "compositor",
     "corefoundationasyncio>=0.0.1",
-    "defcon>=0.10.3",
+    "defcon>=0.12.1",
     "defconappkit",
     "delocate==0.10.7",
-    "drawbot",
     "feapyfofum",
     "featools2",
+    "fontmath>=0.9.4",
     "fontparts",
     "fontpens",
-    "fonttools[lxml,type1,ufo,unicode,woff]>=4.39.3",
+    "fonttools[lxml,type1,ufo,unicode,woff]>=4.58.5",
     "fs>=2.4.16",
-    "jedi>=0.18.2",
+    "google-generativeai>=0.8.5",
+    "jedi>=0.19.2",
     "mutatormath>=3.0.1",
-    "packaging>=23.1",
+    "packaging>=25.0",
     "pillow==10.1.0",
-    "pip>=23.1.2",
-    "py2app>=0.27",
-    "pygifsicle>=1.1.0",
-    "pygments>=2.15.1",
-    "pyobjc>=9.0",
-    "pytz>=2023.3",
-    "setuptools>=45.2.0",
+    "pip>=25.1.1",
+    "py2app>=0.28.8",
+    "pygments>=2.19.2",
+    "pyobjc>=11.1",
+    "pytz>=2025.2",
+    "ruff-api>=0.1.0",
+    "setuptools==70.3.0",
     "ufo-extractor",
     "ufo2fdk",
     "ufo2svg",
     "wofftools",
+    # MCP and sandbox dependencies
+    "fastmcp>=2.10.6",
+    "dagger-io>=0.9.0",
+    "anthropic>=0.25.0",
+    "drawbotgrid",
+    "drawbot",
 ]
 
 [tool.uv.sources]
-defconappkit = { git = "https://github.com/robotools/defconAppKit.git" }
-fontparts = { git = "https://github.com/robotools/fontParts.git" }
-fontpens = { git = "https://github.com/robotools/fontPens.git" }
-wofftools = { git = "https://github.com/typesupply/woffTools.git" }
-compositor = { git = "https://github.com/robotools/compositor.git" }
-ufo-extractor = { git = "https://github.com/robotools/extractor.git" }
-ufo2svg = { git = "https://github.com/typesupply/ufo2svg.git" }
-ufo2fdk = { git = "https://github.com/robotools/ufo2fdk.git" }
-feapyfofum = { git = "https://github.com/typesupply/feaPyFoFum.git" }
-featools2 = { git = "https://github.com/typesupply/feaTools2.git" }
-drawbot = { path = "drawBot", editable = true }
+defconappkit = { git = "https://github.com/robotools/defconAppKit" }
+fontparts = { git = "https://github.com/robotools/fontParts" }
+fontpens = { git = "https://github.com/robotools/fontPens" }
+wofftools = { git = "https://github.com/typesupply/woffTools" }
+compositor = { git = "https://github.com/robotools/compositor" }
+ufo-extractor = { git = "https://github.com/robotools/extractor" }
+ufo2svg = { git = "https://github.com/typesupply/ufo2svg" }
+ufo2fdk = { git = "https://github.com/robotools/ufo2fdk" }
+feapyfofum = { git = "https://github.com/typesupply/feaPyFoFum" }
+featools2 = { git = "https://github.com/typesupply/feaTools2" }
+drawbotgrid = { git = "https://github.com/mathieureguer/drawbotgrid" }
+drawbot = { git = "https://github.com/typemytype/drawbot" }
+
+[dependency-groups]
+dev = [
+    "autopep8>=2.3.2",
+    "black>=25.1.0",
+]
+
+[tool.basedpyright]
+extraPaths = ["lib"]
+pythonVersion = "3.11"

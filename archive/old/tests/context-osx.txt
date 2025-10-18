@@ -1,0 +1,19 @@
+# vim: set filetype=python:
+# Doctests for context functions on OSX.
+
+>>> from pagebot import getContext
+>>> context = getContext()
+>>> context
+<DrawBotContext>
+>>> context = getContext('DrawBot')
+>>> context
+<DrawBotContext>
+>>> context = getContext('Flat')
+>>> context
+<FlatContext>
+>>> context = getContext('Html')
+>>> context
+<HtmlContext>
+>>> context = getContext('svg')
+>>> context
+<SvgContext>

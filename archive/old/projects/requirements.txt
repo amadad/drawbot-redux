@@ -1,0 +1,16 @@
+booleanOperations
+fontTools>=4.17.1
+fontParts
+libsass==0.19.3
+markdown>=3.3.3
+recommonmark
+sphinx
+sphinx_rtd_theme
+svgwrite==1.3.1
+tornado==6.0.3
+Pillow>=7.2.0
+uharfbuzz==0.14.0
+python-lorem==1.1.2
+#flat==0.3.1
+git+https://github.com/PageBot/flat.git
+.

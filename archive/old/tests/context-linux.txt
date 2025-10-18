@@ -1,0 +1,16 @@
+# vim: set filetype=python:
+# Doctests for context functions on Linux.
+
+>>> from pagebot import getContext
+>>> context = getContext()
+>>> print(context)
+<FlatContext>
+>>> context = getContext('Flat')
+>>> print(context)
+<FlatContext>
+>>> context = getContext('Html')
+>>> print(context)
+<HtmlContext>
+>>> context = getContext('svg')
+>>> print(context)
+<SvgContext>
