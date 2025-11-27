@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
 
-from drawbot_skia import drawbot as db
+import drawBot as db
 from drawbot_grid import Grid
 from drawbot_design_system import (
     POSTER_SCALE,

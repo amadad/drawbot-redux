@@ -1,69 +1,59 @@
 [project]
 name = "drawbot-redux"
 version = "0.1.0"
-description = "Add your description here"
+description = "Compositional design system for DrawBot with automatic typography enforcement"
 readme = "README.md"
 requires-python = ">=3.11"
+
+# Core dependencies only - what you need to run the design system
 dependencies = [
-    "attrs>=25.3.0",
+    "pillow>=10.0.0",
+    "fonttools>=4.50.0",
+]
+
+[project.optional-dependencies]
+# Full DrawBot support (macOS only)
+drawbot = [
+    "drawbot",
+    "drawbotgrid",
+    "pyobjc>=11.0",
+]
+
+# MCP server for Claude Desktop integration
+mcp = [
+    "fastmcp>=2.10.6",
+    "anthropic>=0.25.0",
+]
+
+# Font editing tools (optional, heavy)
+fonts = [
     "booleanoperations>=0.9.0",
-    "brotli>=1.1.0",
-    "cocoa-vanilla==0.5.0",
-    "compositor",
-    "corefoundationasyncio>=0.0.1",
     "defcon>=0.12.1",
-    "defconappkit",
-    "delocate==0.10.7",
-    "feapyfofum",
-    "featools2",
     "fontmath>=0.9.4",
     "fontparts",
     "fontpens",
-    "fonttools[lxml,type1,ufo,unicode,woff]>=4.58.5",
-    "fs>=2.4.16",
-    "google-generativeai>=0.8.5",
-    "jedi>=0.19.2",
     "mutatormath>=3.0.1",
-    "packaging>=25.0",
-    "pillow==10.1.0",
-    "pip>=25.1.1",
-    "py2app>=0.28.8",
-    "pygments>=2.19.2",
-    "pyobjc>=11.1",
-    "pytz>=2025.2",
-    "ruff-api>=0.1.0",
-    "setuptools==70.3.0",
     "ufo-extractor",
-    "ufo2fdk",
-    "ufo2svg",
-    "wofftools",
-    # MCP and sandbox dependencies
-    "fastmcp>=2.10.6",
-    "dagger-io>=0.9.0",
-    "anthropic>=0.25.0",
-    "drawbotgrid",
-    "drawbot",
+    "compositor",
+]
+
+# Development tools
+dev = [
+    "black>=25.1.0",
+    "pytest>=8.0.0",
 ]
 
 [tool.uv.sources]
-defconappkit = { git = "https://github.com/robotools/defconAppKit" }
-fontparts = { git = "https://github.com/robotools/fontParts" }
-fontpens = { git = "https://github.com/robotools/fontPens" }
-wofftools = { git = "https://github.com/typesupply/woffTools" }
-compositor = { git = "https://github.com/robotools/compositor" }
-ufo-extractor = { git = "https://github.com/robotools/extractor" }
-ufo2svg = { git = "https://github.com/typesupply/ufo2svg" }
-ufo2fdk = { git = "https://github.com/robotools/ufo2fdk" }
-feapyfofum = { git = "https://github.com/typesupply/feaPyFoFum" }
-featools2 = { git = "https://github.com/typesupply/feaTools2" }
 drawbotgrid = { git = "https://github.com/mathieureguer/drawbotgrid" }
 drawbot = { git = "https://github.com/typemytype/drawbot" }
+fontparts = { git = "https://github.com/robotools/fontParts" }
+fontpens = { git = "https://github.com/robotools/fontPens" }
+compositor = { git = "https://github.com/robotools/compositor" }
+ufo-extractor = { git = "https://github.com/robotools/extractor" }
 
-[dependency-groups]
-dev = [
-    "autopep8>=2.3.2",
-    "black>=25.1.0",
-]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["lib"]
 
 [tool.basedpyright]
 extraPaths = ["lib"]

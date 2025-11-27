@@ -1,1 +1,0 @@
-# DrawBot MCP Server Module

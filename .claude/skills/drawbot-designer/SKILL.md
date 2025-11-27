@@ -1,6 +1,6 @@
 ---
 name: drawbot-designer
-description: Create well-designed posters, layouts, and graphics using DrawBot with automatic enforcement of typography principles from Hochuli, Bringhurst, and Müller-Brockmann. Use when users request posters, layouts, graphics, editorial designs, or mention DrawBot, typography, grid systems, or programmatic design. Requires drawbot-skia package.
+description: Create well-designed posters, layouts, and graphics using DrawBot with automatic enforcement of typography principles from Hochuli, Bringhurst, and Müller-Brockmann. Use when users request posters, layouts, graphics, editorial designs, or mention DrawBot, typography, grid systems, or programmatic design.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -10,10 +10,36 @@ Create professional posters, layouts, and graphics with automatic enforcement of
 
 ## Quick Start
 
-1. **Read [examples.md](examples.md)** for working code you can copy
-2. **Use [templates/](templates/)** to start a new project
-3. **Check [reference.md](reference.md)** for API details
-4. **See [filters.md](filters.md)** for image effects and textures
+1. **Read [design-vocabulary.md](design-vocabulary.md)** to translate user intent → design choices
+2. **Use [templates/](templates/)** to start implementation
+3. **Check [examples.md](examples.md)** for working patterns
+4. **See [reference.md](reference.md)** for API details
+
+## Workflow: Natural Language → Design
+
+### Step 0: Interpret Intent (BEFORE coding)
+
+When user says something like "create a bold modern poster":
+
+1. **Open [design-vocabulary.md](design-vocabulary.md)**
+2. **Look up mood words**: "bold" → high contrast, large title; "modern" → asymmetric, sans-serif
+3. **Identify content type**: poster → announcement pattern
+4. **Combine settings**: asymmetric grid, large title, limited colors
+5. **Then implement** using the design system
+
+### Example Translation
+
+**User says:** "Make an elegant invitation for a gala"
+
+**Look up:**
+- "elegant" → symmetric grid, serif type, muted colors, balanced whitespace
+- "invitation" → announcement pattern (WHAT → WHEN → WHERE)
+
+**Result:**
+- Grid: 12×8, centered
+- Font: Serif, conservative scale
+- Colors: Cream, dark gray, gold accent
+- Structure: Event name → Date → Venue → RSVP
 
 ## When to Use This Skill
 
@@ -41,7 +67,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
 
-from drawbot_skia import drawbot as db
+import drawBot as db
 from drawbot_grid import Grid
 from drawbot_design_system import (
     POSTER_SCALE,        # or MAGAZINE_SCALE, BOOK_SCALE, REPORT_SCALE

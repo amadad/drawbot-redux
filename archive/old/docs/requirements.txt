@@ -1,5 +1,0 @@
-libsass
-fontTools
-markdown
-svgwrite
-flat

@@ -33,8 +33,8 @@ When creating reports, follow these principles:
 ## DrawBot Implementation Strategy
 
 For each report request:
-- Use `drawbot-skia` for cross-platform compatibility when possible
-- Leverage the existing MCP server for compositional design if available
+- Use official DrawBot (macOS) for full typography support
+- Leverage the design system in `lib/` for grids and typography scales
 - Create modular functions for repeated elements
 - Implement responsive layouts that adapt to content
 - Generate both single-page and multi-page documents as needed
@@ -42,7 +42,7 @@ For each report request:
 ## Code Structure Template
 
 ```python
-from drawbot_skia.drawbot import *
+import drawBot as db
 import json
 import datetime
 

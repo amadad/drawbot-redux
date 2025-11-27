@@ -1,149 +1,142 @@
 # DrawBot Redux
 
-Compositional design system combining DrawBot's programmatic graphics with automatic enforcement of typography principles from Hochuli, Bringhurst, and Müller-Brockmann.
-
-**Features:**
-- 🎨 Grid-based layouts with semantic coordinates
-- 📐 Pre-defined typography scales (poster, magazine, book, report)
-- 📝 Point-based text wrapping (no overflow)
-- 🔧 Real font metrics (no approximations)
-- 🤖 Agent skills for Claude Code
-- 1,807 texture assets in 8 categories
+Compositional design system for DrawBot with automatic enforcement of typography principles.
 
 ## Quick Start
 
-### Installation
-
 ```bash
-# Install uv
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# Install
+uv sync --extra drawbot
 
-# Clone and setup
-git clone https://github.com/amadad/drawbot-redux.git
-cd drawbot-redux
-uv sync
-
-# For GIF support
-brew install gifsicle
-```
-
-### Create Your First Poster
-
-```bash
-# Run the minimal example
+# Run example
 uv run python examples/minimal_poster_example.py
 
 # View output
 open output/minimal_poster.pdf
 ```
 
-**That's it!** You have a professionally-designed poster following all principles.
+## What This Does
+
+Enforces professional design principles automatically:
+
+- **Grid-based layouts** - Semantic coordinates, no pixel math
+- **Typography scales** - Poster, magazine, book, report contexts
+- **Point-based text wrapping** - Measures words, no overflow
+- **Layout validation** - Catches overlaps before rendering
+
+Based on Hochuli, Bringhurst, and Müller-Brockmann.
 
 ## Project Structure
 
 ```
 drawbot-redux/
-├── lib/                  # Core design system
-│   ├── drawbot_grid.py   # Grid system (auto-reads canvas)
-│   └── drawbot_design_system.py  # Typography, wrapping, validation
+├── lib/                      # CORE: Design system
+│   ├── drawbot_design_system.py   # Typography, wrapping, validation
+│   └── drawbot_grid.py            # Grid system
 │
-├── examples/             # Working examples
-│   ├── minimal_poster_example.py       # Quick start
-│   └── longitudinalbench_poster_v7.py  # Complete example
+├── examples/                 # Production examples
+│   ├── minimal_poster_example.py  # Start here
+│   ├── longitudinalbench_poster_v7.py
+│   ├── FIXED_tier_card_example.py
+│   └── scty_poster.py
 │
-├── docs/                 # Documentation
-│   ├── quickstart.md     # Fast start guide
-│   ├── agent-learning-reference.md     # For AI coding agents
-│   ├── learning-structure.md           # Pedagogical framework
-│   ├── design-system-usage.md          # Design system guide
-│   ├── drawbot-api-quick-reference.md  # Core API
-│   └── layout-design-principles.md     # Composition theory
+├── docs/                     # Documentation
+│   ├── quickstart.md
+│   ├── design-system-usage.md
+│   ├── agent-learning-reference.md
+│   ├── drawbot-api-quick-reference.md
+│   ├── drawbot-image-filters-reference.md
+│   ├── typography-style-guide.md
+│   └── layout-design-principles.md
 │
-├── assets/               # 1,807 textures (gitignored)
-├── library/              # Tutorials, cookbook, foundations
-├── scripts/              # Utility scripts
-├── mcp/                  # MCP server
-├── archive/              # Historical work
-│   ├── summaries/        # Project evolution docs
-│   ├── experiments/      # Old experimental code
-│   └── old/              # Legacy archive
-│
-├── CLAUDE.md             # Agent instructions
-└── pyproject.toml        # Python project config
+├── mcp/                      # MCP server for Claude Desktop
+└── output/                   # Generated files (gitignored)
 ```
 
-## What You Get
+## Usage
 
-✅ **Automatic enforcement** of design principles
-✅ **Grid-based layouts** with semantic coordinates
-✅ **Proper typography scales** for different contexts
-✅ **Point-based text wrapping** (no overflow)
-✅ **Real font metrics** (no approximations)
-✅ **Portable paths** (works on any machine)
-✅ **Layout validation** (prevents overlaps)
+### Basic Pattern
 
-## Using with Claude Code
+```python
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
 
-The project includes an agent skill that automatically helps Claude Code:
-1. Use the design system correctly
-2. Follow typography principles
-3. Apply grid-based layouts
-4. Create professional designs
+import drawBot as db
+from drawbot_grid import Grid
+from drawbot_design_system import (
+    POSTER_SCALE, setup_poster_page, draw_wrapped_text, get_output_path
+)
 
-Just ask Claude: **"Create a poster"** and it uses the system automatically.
+# Setup
+WIDTH, HEIGHT, MARGIN = setup_poster_page("letter")
+grid = Grid.from_margins((-MARGIN, -MARGIN, -MARGIN, -MARGIN),
+                         column_subdivisions=12, row_subdivisions=8)
+
+# Draw with grid
+header = (*grid[(0, 6)], *grid*(12, 2))  # Full width, top 2 rows
+db.rect(*header)
+
+# Save
+db.saveImage(str(get_output_path("poster.pdf")))
+```
+
+### Typography Scales
+
+```python
+from drawbot_design_system import POSTER_SCALE, MAGAZINE_SCALE, BOOK_SCALE
+
+scale = POSTER_SCALE  # 18pt base, 1.5 ratio
+db.fontSize(scale.title)    # 91pt
+db.fontSize(scale.body)     # 18pt
+db.fontSize(scale.caption)  # 12pt
+```
+
+### Text Wrapping
+
+```python
+from drawbot_design_system import draw_wrapped_text
+
+# Point-based wrapping (measures actual words)
+draw_wrapped_text(
+    text="Your text here...",
+    x=100, y=500,
+    width=400, height=300,
+    font="Helvetica", size=18
+)
+```
+
+## Installation Options
+
+```bash
+# Core only
+uv sync
+
+# With DrawBot (macOS)
+uv sync --extra drawbot
+
+# With MCP server
+uv sync --extra mcp
+
+# With font editing tools
+uv sync --extra fonts
+
+# Development
+uv sync --extra dev
+```
 
 ## Documentation
 
-- **[Quick Start](docs/quickstart.md)** - Get drawing in 5 minutes
-- **[Design System Guide](docs/design-system-usage.md)** - Complete usage
-- **[Learning Structure](docs/learning-structure.md)** - Pedagogical framework
-- **[API Reference](docs/drawbot-api-quick-reference.md)** - Core API
-- **[Agent Reference](docs/agent-learning-reference.md)** - For AI coding
-
-## Examples
-
-### Minimal Poster (80 lines)
-```bash
-uv run python examples/minimal_poster_example.py
-```
-
-### Complete Poster (352 lines)
-```bash
-uv run python examples/longitudinalbench_poster_v7.py
-```
-
-## What Makes This Different
-
-**Before**: Manual calculations, text overflow, wrong typography scales
-**After**: Automatic enforcement of professional design principles
-
-The gap between documentation and code is closed. 🎉
-
-## Assets
-
-1,807 textures in 8 categories (stored separately, not in repo):
-- gradient (1,001) - Color gradients, transitions
-- gold (202) - Metallic gold, foils
-- bubble (201) - Bubble wrap, spheres
-- cardboard (101) - Cardboard, corrugated
-- ziplock (102) - Plastic bags, transparency
-- marker (100) - Hand-drawn textures
-- paper (57) - Paper grain, subtle backgrounds
-- rust (51) - Weathered metal
-
-See `assets/README.md` for complete catalog.
+| Doc | Purpose |
+|-----|---------|
+| [quickstart.md](docs/quickstart.md) | 5-minute start |
+| [design-system-usage.md](docs/design-system-usage.md) | Complete guide |
+| [drawbot-api-quick-reference.md](docs/drawbot-api-quick-reference.md) | DrawBot API reference |
+| [drawbot-image-filters-reference.md](docs/drawbot-image-filters-reference.md) | Image filters reference |
+| [typography-style-guide.md](docs/typography-style-guide.md) | Typography principles |
+| [agent-learning-reference.md](docs/agent-learning-reference.md) | For AI agents |
 
 ## Credits
 
-Built on:
-- **[DrawBot](https://github.com/typemytype/drawbot)** by Just van Rossum, Erik van Blokland, Frederik Berlaen
-- **Typography principles** from Jost Hochuli, Robert Bringhurst, Josef Müller-Brockmann
-- **Python for Designers** pedagogical approach
-
-## License
-
-See [license.txt](license.txt)
-
----
-
-**DrawBot Redux: Professional design automation with enforced principles** 🎨🤖
+- [DrawBot](https://github.com/typemytype/drawbot) - Just van Rossum, Erik van Blokland, Frederik Berlaen
+- Typography: Hochuli, Bringhurst, Müller-Brockmann

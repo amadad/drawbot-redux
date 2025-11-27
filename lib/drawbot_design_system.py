@@ -1,33 +1,81 @@
 """
-DrawBot Design System - Enforces principles from docs/
+DrawBot Design System - Enforces professional design principles.
 
-This module ensures:
-1. Correct typography scales for context (poster, book, magazine, etc.)
-2. Proper text wrapping based on POINTS not characters
-3. Real baseline metrics (no fontSize approximations)
-4. Path handling that works on any machine
-5. Layout validation before rendering
+This module provides:
+1. Typography scales (poster, book, magazine, report)
+2. Point-based text wrapping (real measurements, not character heuristics)
+3. Layout validation (overlap detection, boundary checks)
+4. Portable path handling
 
-Based on:
-- docs/layout-design-principles.md
-- docs/typography-style-guide.md
+Based on principles from:
+- Hochuli: Detail in Typography
+- Bringhurst: Elements of Typographic Style
+- Müller-Brockmann: Grid Systems
+
+Usage:
+    from drawbot_design_system import (
+        POSTER_SCALE, setup_poster_page, draw_wrapped_text, get_output_path
+    )
 """
 
 from pathlib import Path
-import drawBot as db
-import textwrap
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Dict, Any
 from dataclasses import dataclass
+
+# Lazy import drawBot to allow core-only installs that don't use drawing functions
+_db = None
+
+def _get_db():
+    """Lazy-load drawBot on first use, with clear error if not installed."""
+    global _db
+    if _db is None:
+        try:
+            import drawBot as db_module
+            _db = db_module
+        except ImportError:
+            raise ImportError(
+                "drawBot is required for drawing functions but is not installed.\n"
+                "Install with: uv sync --extra drawbot\n"
+                "Or: pip install drawBot"
+            )
+    return _db
+
+# Create a proxy that lazy-loads on attribute access
+class _DrawBotProxy:
+    def __getattr__(self, name):
+        return getattr(_get_db(), name)
+
+db = _DrawBotProxy()
+
+__all__ = [
+    # Path management
+    'REPO_ROOT', 'OUTPUT_DIR', 'get_output_path',
+    # Typography scales
+    'TypographyScale', 'POSTER_SCALE', 'MAGAZINE_SCALE', 'BOOK_SCALE', 'REPORT_SCALE',
+    'create_typography_scale',
+    # Scale ratios
+    'MINOR_SECOND', 'MAJOR_SECOND', 'MINOR_THIRD', 'MAJOR_THIRD',
+    'PERFECT_FOURTH', 'PERFECT_FIFTH', 'GOLDEN_RATIO',
+    # Text functions
+    'get_text_metrics', 'wrap_text_to_width', 'draw_wrapped_text',
+    # Layout
+    'validate_layout_fit', 'setup_poster_page',
+    # Helpers
+    'get_spacing_for_context', 'get_color_palette',
+]
 
 # ==================== PATH MANAGEMENT ====================
 
-# Get repo root (this file is in lib/, go up one level)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = REPO_ROOT / "output"
-OUTPUT_DIR.mkdir(exist_ok=True)
+
+def _ensure_output_dir():
+    """Create output directory on first use (not at import time)."""
+    OUTPUT_DIR.mkdir(exist_ok=True)
 
 def get_output_path(filename: str) -> Path:
-    """Get absolute path for output file (works on any machine)"""
+    """Get absolute path for output file (works on any machine)."""
+    _ensure_output_dir()
     return OUTPUT_DIR / filename
 
 # ==================== TYPOGRAPHY SCALES ====================
@@ -87,15 +135,18 @@ def get_text_metrics(text: str, font: str, size: float) -> dict:
     # Get font metrics
     try:
         ascender = db.fontAscender()
-        descender = db.fontDescender()
+        descender = db.fontDescender()  # Should be negative
         line_height = db.fontLineHeight()
         x_height = db.fontXHeight()
         cap_height = db.fontCapHeight()
-    except:
+    except Exception as e:
         # Fallback if metrics not available
+        # Log warning so issues don't go unnoticed
+        import warnings
+        warnings.warn(f"Could not get font metrics for '{font}' at {size}pt: {e}")
         ascender = size * 0.8
-        descender = size * 0.2
-        line_height = size
+        descender = -size * 0.2  # Descender should be negative (below baseline)
+        line_height = size * 1.2
         x_height = size * 0.5
         cap_height = size * 0.7
 
@@ -139,18 +190,117 @@ def wrap_text_to_width(
     """
     Wrap text based on ACTUAL visual width in points.
 
-    Not character count heuristics - uses real DrawBot measurements.
+    Measures each word with DrawBot to ensure accurate line breaks.
+    Handles variable-width fonts correctly (unlike character-count methods).
+
+    Args:
+        text: Text to wrap
+        width_in_points: Maximum line width in points
+        font: Font name
+        size: Font size in points
+
+    Returns:
+        List of wrapped lines
     """
-    chars_per_line = calculate_chars_per_line(width_in_points, font, size)
+    db.font(font)
+    db.fontSize(size)
 
-    # Ensure we stay within optimal range (45-75 characters)
-    # From docs/layout-design-principles.md:63-69
-    if chars_per_line > 75:
-        chars_per_line = 75
-    elif chars_per_line < 20:  # Minimum for posters
-        chars_per_line = 20
+    words = text.split()
+    if not words:
+        return []
 
-    return textwrap.wrap(text, width=chars_per_line)
+    lines = []
+    current_line_words = []
+    current_line_width = 0.0
+    space_width, _ = db.textSize(" ")
+
+    for word in words:
+        word_width, _ = db.textSize(word)
+
+        # Calculate width if we add this word
+        if current_line_words:
+            test_width = current_line_width + space_width + word_width
+        else:
+            test_width = word_width
+
+        if test_width <= width_in_points:
+            # Word fits on current line
+            current_line_words.append(word)
+            current_line_width = test_width
+        else:
+            # Word doesn't fit - start new line
+            if current_line_words:
+                lines.append(" ".join(current_line_words))
+
+            # Handle words wider than the box (long URLs, etc.)
+            if word_width > width_in_points:
+                # Break the word into multiple chunks
+                chunks = _break_long_word(word, width_in_points, font, size)
+                # Add all but the last chunk as separate lines
+                for chunk in chunks[:-1]:
+                    lines.append(chunk)
+                # Start new line with final chunk (may continue with more words)
+                if chunks:
+                    last_chunk = chunks[-1]
+                    last_width, _ = db.textSize(last_chunk)
+                    current_line_words = [last_chunk]
+                    current_line_width = last_width
+                else:
+                    current_line_words = []
+                    current_line_width = 0.0
+            else:
+                current_line_words = [word]
+                current_line_width = word_width
+
+    # Don't forget the last line
+    if current_line_words:
+        lines.append(" ".join(current_line_words))
+
+    return lines
+
+
+def _break_long_word(word: str, max_width: float, font: str, size: float) -> List[str]:
+    """
+    Break a word that's too wide for the column into multiple chunks.
+
+    Returns a list of chunks, each fitting within max_width (with hyphens added
+    to all but the last chunk).
+    """
+    db.font(font)
+    db.fontSize(size)
+
+    hyphen_width, _ = db.textSize("-")
+    available = max_width - hyphen_width
+
+    chunks = []
+    remaining = word
+
+    while remaining:
+        # Check if remainder fits without hyphen
+        remaining_width, _ = db.textSize(remaining)
+        if remaining_width <= max_width:
+            chunks.append(remaining)
+            break
+
+        # Find how many characters fit with hyphen
+        found_break = False
+        for i in range(len(remaining), 0, -1):
+            part_width, _ = db.textSize(remaining[:i])
+            if part_width <= available:
+                chunks.append(remaining[:i] + "-")
+                remaining = remaining[i:]
+                found_break = True
+                break
+
+        # Fallback: take at least one character to avoid infinite loop
+        if not found_break:
+            if remaining:
+                chunks.append(remaining[0] + "-")
+                remaining = remaining[1:]
+            else:
+                break
+
+    return chunks if chunks else [""]
 
 def draw_wrapped_text(
     text: str,
@@ -216,33 +366,69 @@ def draw_wrapped_text(
 
 # ==================== LAYOUT VALIDATION ====================
 
-def validate_layout_fit(elements: List[dict], page_height: float) -> Tuple[bool, Optional[str]]:
+def validate_layout_fit(
+    elements: List[Dict[str, Any]],
+    page_height: float,
+    page_width: Optional[float] = None
+) -> Tuple[bool, Optional[str]]:
     """
-    Validate that all elements fit on page before drawing.
+    Validate that all elements fit on page without overlapping.
+
+    Coordinate system: DrawBot uses bottom-left origin.
+    - y is the TOP of the element
+    - Element extends from y down to (y - height)
 
     Args:
-        elements: List of dicts with {'y': float, 'height': float, 'name': str}
+        elements: List of dicts with:
+            - 'y': float - Top Y coordinate
+            - 'height': float - Element height
+            - 'name': str - Element name for error messages
+            - 'x': float (optional) - Left X coordinate
+            - 'width': float (optional) - Element width
         page_height: Total page height
+        page_width: Total page width (optional, for horizontal checks)
 
     Returns:
         (fits: bool, error_message: Optional[str])
     """
-    # Sort by y position (top to bottom)
+    if not elements:
+        return True, None
+
+    # Sort by y position (top to bottom, highest y first)
     sorted_elements = sorted(elements, key=lambda e: e['y'], reverse=True)
 
     for i, elem in enumerate(sorted_elements):
-        bottom = elem['y'] - elem['height']
+        elem_top = elem['y']
+        elem_bottom = elem['y'] - elem['height']
+        elem_name = elem.get('name', f'Element {i}')
+
+        # Check if element extends above page
+        if elem_top > page_height:
+            overhang = elem_top - page_height
+            return False, f"{elem_name} extends {overhang:.1f}pt above page top"
 
         # Check if element extends below page
-        if bottom < 0:
-            return False, f"{elem['name']} extends {abs(bottom):.1f}pt below page bottom"
+        if elem_bottom < 0:
+            return False, f"{elem_name} extends {abs(elem_bottom):.1f}pt below page bottom"
 
-        # Check for overlaps with next element
+        # Check horizontal bounds if provided
+        if page_width and 'x' in elem and 'width' in elem:
+            if elem['x'] < 0:
+                return False, f"{elem_name} extends {abs(elem['x']):.1f}pt past left edge"
+            if elem['x'] + elem['width'] > page_width:
+                overhang = (elem['x'] + elem['width']) - page_width
+                return False, f"{elem_name} extends {overhang:.1f}pt past right edge"
+
+        # Check for overlaps with elements below
         if i < len(sorted_elements) - 1:
             next_elem = sorted_elements[i + 1]
-            if bottom < (next_elem['y'] + next_elem.get('margin_top', 0)):
-                overlap = (next_elem['y'] + next_elem.get('margin_top', 0)) - bottom
-                return False, f"{elem['name']} overlaps {next_elem['name']} by {overlap:.1f}pt"
+            next_top = next_elem['y']
+            next_name = next_elem.get('name', f'Element {i+1}')
+
+            # Overlap occurs if current bottom is below next top
+            if elem_bottom < next_top:
+                overlap = next_top - elem_bottom
+                return False, f"{elem_name} overlaps {next_name} by {overlap:.1f}pt"
 
     return True, None
 

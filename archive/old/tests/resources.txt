@@ -1,9 +1,0 @@
-# vim: set filetype=python:
-
->>> from pagebot.filepaths import getResourcesPath
->>> resourcesPath = getResourcesPath()
->>> from os import listdir
->>> files = sorted(listdir(resourcesPath))
->>> files = [f for f in files if (not '.' in f and not '_' in f)] 
->>> files
-['color', 'images', 'languages', 'sketch', 'templates', 'testfonts', 'texts']

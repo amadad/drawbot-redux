@@ -5,7 +5,7 @@ Quick reference for working with images, textures, and visual effects in DrawBot
 ## Basic Image Loading
 
 ```python
-from drawbot_skia import drawbot as db
+import drawBot as db
 
 # Method 1: Direct path (simple)
 db.image("../../assets/paper/01.jpg", (x, y))
