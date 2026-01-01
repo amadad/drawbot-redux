@@ -127,6 +127,107 @@ db.fill(*colors["background"])
 db.rect(0, 0, WIDTH, HEIGHT)
 ```
 
+### Color Harmony Generation
+
+```python
+from drawbot_design_system import (
+    generate_color_palette,
+    hex_to_rgb,
+    rgb_to_hex,
+    check_contrast_ratio,
+    get_accessible_text_color,
+    adjust_lightness
+)
+
+# Generate from base color
+base = hex_to_rgb("#2E86AB")
+palette = generate_color_palette(base, harmony="complementary")
+
+# Harmonies: complementary, analogous, triadic, split_complementary, tetradic, monochromatic
+
+# Check WCAG contrast
+ratio, level = check_contrast_ratio(palette['text'], palette['background'])
+# level: "AAA" (7:1+), "AA" (4.5:1+), "AA-large" (3:1+), "fail"
+
+# Auto-select accessible text color
+text_color = get_accessible_text_color(some_background)
+
+# Adjust lightness (-1 to 1)
+lighter = adjust_lightness(r, g, b, 0.3)   # Lighter
+darker = adjust_lightness(r, g, b, -0.3)   # Darker
+```
+
+### OpenType Features
+
+```python
+from drawbot_design_system import (
+    set_opentype_features,
+    get_available_opentype_features
+)
+
+# Check available features
+features = get_available_opentype_features("Adobe Garamond Pro")
+
+# Enable features
+set_opentype_features(['smcp', 'onum', 'liga'])
+
+# Common features:
+# 'liga' - Standard ligatures (fi, fl)
+# 'smcp' - Small capitals
+# 'onum' - Oldstyle figures
+# 'tnum' - Tabular figures
+# 'frac' - Fractions (1/2 → ½)
+# 'ss01'-'ss20' - Stylistic sets
+```
+
+### Variable Fonts
+
+```python
+from drawbot_design_system import (
+    set_font_variation,
+    get_font_variation_axes
+)
+
+# Check available axes
+axes = get_font_variation_axes("Skia")
+# Returns: {'wght': {'minValue': 100, 'maxValue': 900, ...}, ...}
+
+# Set axis values
+set_font_variation(wght=600, wdth=85)
+
+# Common axes:
+# wght - Weight (100-900)
+# wdth - Width (50-200)
+# slnt - Slant (-90 to 90)
+# ital - Italic (0 or 1)
+# opsz - Optical size
+```
+
+### Print Production
+
+```python
+from drawbot_design_system import (
+    setup_print_page,
+    validate_print_ready,
+    PRINT_PRESETS
+)
+
+# Setup with bleed
+specs = setup_print_page("letter", include_bleed=True)
+# Returns: width, height, canvas_width, canvas_height, bleed, safe_margin, trim_x, trim_y
+
+# Available presets: letter, tabloid, a4, a3, poster_24x36
+
+# Custom bleed
+specs = setup_print_page("a4", include_bleed=True, custom_bleed=12)
+
+# Validate
+is_valid, warnings = validate_print_ready()
+
+# CMYK colors for print
+db.cmykFill(0.6, 0.4, 0.4, 1.0)  # Rich black
+```
+
 ### Portable Paths
 
 ```python
@@ -314,7 +415,8 @@ See `../../assets/README.md` for catalog.
 
 ## Further Reading
 
-- Complete guide: `../../docs/DESIGN_SYSTEM_USAGE.md`
+- Complete guide: `../../docs/design-system-usage.md`
 - Layout theory: `../../docs/layout-design-principles.md`
 - Typography: `../../docs/typography-style-guide.md`
 - DrawBot API: `../../docs/drawbot-api-quick-reference.md`
+- Print production: `../../docs/print-production-checklist.md`

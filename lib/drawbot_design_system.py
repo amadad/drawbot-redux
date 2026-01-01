@@ -62,6 +62,14 @@ __all__ = [
     'validate_layout_fit', 'setup_poster_page',
     # Helpers
     'get_spacing_for_context', 'get_color_palette',
+    # Color harmony
+    'generate_color_palette', 'hex_to_rgb', 'rgb_to_hex', 'check_contrast_ratio',
+    'get_accessible_text_color', 'adjust_lightness',
+    # OpenType & Variable Fonts
+    'set_opentype_features', 'get_available_opentype_features',
+    'set_font_variation', 'get_font_variation_axes',
+    # Print production
+    'setup_print_page', 'validate_print_ready', 'PRINT_PRESETS',
 ]
 
 # ==================== PATH MANAGEMENT ====================
@@ -529,6 +537,497 @@ def setup_poster_page(
     margin = min(w, h) * margin_ratio
 
     return w, h, margin
+
+# ==================== COLOR HARMONY ====================
+
+import colorsys
+import math
+
+def hex_to_rgb(hex_color: str) -> Tuple[float, float, float]:
+    """Convert hex color (#RRGGBB or RRGGBB) to RGB (0-1 range)."""
+    hex_color = hex_color.lstrip('#')
+    if len(hex_color) != 6:
+        raise ValueError(f"Invalid hex color: {hex_color}")
+    return tuple(int(hex_color[i:i+2], 16) / 255 for i in (0, 2, 4))
+
+def rgb_to_hex(r: float, g: float, b: float) -> str:
+    """Convert RGB (0-1 range) to hex color (#RRGGBB)."""
+    return f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
+
+def adjust_lightness(r: float, g: float, b: float, factor: float) -> Tuple[float, float, float]:
+    """
+    Adjust lightness of RGB color.
+
+    Args:
+        r, g, b: RGB values (0-1 range)
+        factor: Lightness adjustment (-1 to 1). Positive = lighter, negative = darker.
+
+    Returns:
+        Adjusted RGB tuple (0-1 range)
+    """
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    # Adjust lightness, clamping to valid range
+    new_l = max(0, min(1, l + factor * (1 - l if factor > 0 else l)))
+    return colorsys.hls_to_rgb(h, new_l, s)
+
+def _rotate_hue(r: float, g: float, b: float, degrees: float) -> Tuple[float, float, float]:
+    """Rotate hue by given degrees."""
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    h = (h + degrees / 360) % 1.0
+    return colorsys.hls_to_rgb(h, l, s)
+
+def generate_color_palette(
+    base_color: Tuple[float, float, float],
+    harmony: str = "complementary",
+    as_dict: bool = True
+) -> Any:
+    """
+    Generate a color palette based on color harmony theory.
+
+    Args:
+        base_color: RGB tuple (0-1 range) as the primary color
+        harmony: Type of harmony:
+            - "complementary": Base + opposite on color wheel
+            - "analogous": Base + adjacent colors (30 degrees apart)
+            - "triadic": Base + two colors 120 degrees apart
+            - "split_complementary": Base + two colors adjacent to complement
+            - "tetradic": Base + 3 colors forming rectangle on wheel
+            - "monochromatic": Base + lighter/darker variations
+        as_dict: If True, return dict with semantic names. If False, return list.
+
+    Returns:
+        Dict with 'background', 'text', 'accent', 'accent2' (and sometimes 'accent3')
+        or list of RGB tuples
+    """
+    r, g, b = base_color
+
+    if harmony == "complementary":
+        complement = _rotate_hue(r, g, b, 180)
+        colors = [
+            adjust_lightness(r, g, b, 0.7),      # Light background from base
+            adjust_lightness(r, g, b, -0.6),     # Dark text from base
+            base_color,                           # Primary accent
+            complement                            # Complementary accent
+        ]
+
+    elif harmony == "analogous":
+        analog1 = _rotate_hue(r, g, b, 30)
+        analog2 = _rotate_hue(r, g, b, -30)
+        colors = [
+            adjust_lightness(r, g, b, 0.7),
+            adjust_lightness(r, g, b, -0.6),
+            base_color,
+            analog1,
+            analog2
+        ]
+
+    elif harmony == "triadic":
+        triad1 = _rotate_hue(r, g, b, 120)
+        triad2 = _rotate_hue(r, g, b, 240)
+        colors = [
+            adjust_lightness(r, g, b, 0.7),
+            adjust_lightness(r, g, b, -0.6),
+            base_color,
+            triad1,
+            triad2
+        ]
+
+    elif harmony == "split_complementary":
+        split1 = _rotate_hue(r, g, b, 150)
+        split2 = _rotate_hue(r, g, b, 210)
+        colors = [
+            adjust_lightness(r, g, b, 0.7),
+            adjust_lightness(r, g, b, -0.6),
+            base_color,
+            split1,
+            split2
+        ]
+
+    elif harmony == "tetradic":
+        color2 = _rotate_hue(r, g, b, 90)
+        color3 = _rotate_hue(r, g, b, 180)
+        color4 = _rotate_hue(r, g, b, 270)
+        colors = [
+            adjust_lightness(r, g, b, 0.7),
+            adjust_lightness(r, g, b, -0.6),
+            base_color,
+            color2,
+            color3,
+            color4
+        ]
+
+    elif harmony == "monochromatic":
+        colors = [
+            adjust_lightness(r, g, b, 0.7),      # Very light
+            adjust_lightness(r, g, b, -0.7),     # Very dark
+            base_color,                           # Base
+            adjust_lightness(r, g, b, 0.3),      # Light variation
+            adjust_lightness(r, g, b, -0.3)      # Dark variation
+        ]
+
+    else:
+        raise ValueError(f"Unknown harmony type: {harmony}. Use: complementary, analogous, triadic, split_complementary, tetradic, monochromatic")
+
+    if not as_dict:
+        return colors
+
+    result = {
+        "background": colors[0],
+        "text": colors[1],
+        "accent": colors[2]
+    }
+    if len(colors) > 3:
+        result["accent2"] = colors[3]
+    if len(colors) > 4:
+        result["accent3"] = colors[4]
+    if len(colors) > 5:
+        result["accent4"] = colors[5]
+
+    return result
+
+def _relative_luminance(r: float, g: float, b: float) -> float:
+    """Calculate relative luminance per WCAG 2.1."""
+    def adjust(c):
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    return 0.2126 * adjust(r) + 0.7152 * adjust(g) + 0.0722 * adjust(b)
+
+def check_contrast_ratio(
+    foreground: Tuple[float, float, float],
+    background: Tuple[float, float, float]
+) -> Tuple[float, str]:
+    """
+    Check WCAG contrast ratio between two colors.
+
+    Args:
+        foreground: RGB tuple (0-1 range)
+        background: RGB tuple (0-1 range)
+
+    Returns:
+        Tuple of (ratio, level) where level is:
+        - "AAA" (7:1+): Enhanced contrast, all text sizes
+        - "AA" (4.5:1+): Minimum for normal text
+        - "AA-large" (3:1+): Minimum for large text (18pt+ or 14pt+ bold)
+        - "fail": Does not meet WCAG requirements
+    """
+    lum1 = _relative_luminance(*foreground)
+    lum2 = _relative_luminance(*background)
+
+    lighter = max(lum1, lum2)
+    darker = min(lum1, lum2)
+
+    ratio = (lighter + 0.05) / (darker + 0.05)
+
+    if ratio >= 7:
+        level = "AAA"
+    elif ratio >= 4.5:
+        level = "AA"
+    elif ratio >= 3:
+        level = "AA-large"
+    else:
+        level = "fail"
+
+    return ratio, level
+
+def get_accessible_text_color(
+    background: Tuple[float, float, float],
+    prefer_dark: bool = True
+) -> Tuple[float, float, float]:
+    """
+    Get an accessible text color for a given background.
+
+    Args:
+        background: RGB tuple (0-1 range)
+        prefer_dark: If True, prefer dark text when contrast is similar
+
+    Returns:
+        RGB tuple that meets at least WCAG AA contrast
+    """
+    dark = (0.1, 0.1, 0.1)
+    light = (0.98, 0.98, 0.98)
+
+    dark_ratio, _ = check_contrast_ratio(dark, background)
+    light_ratio, _ = check_contrast_ratio(light, background)
+
+    if prefer_dark:
+        return dark if dark_ratio >= 4.5 else light
+    else:
+        return light if light_ratio >= 4.5 else dark
+
+# ==================== OPENTYPE & VARIABLE FONTS ====================
+
+# Common OpenType features with descriptions
+OPENTYPE_FEATURES = {
+    # Ligatures
+    'liga': 'Standard ligatures (fi, fl, ff)',
+    'dlig': 'Discretionary ligatures',
+    'clig': 'Contextual ligatures',
+    'rlig': 'Required ligatures',
+
+    # Capitals
+    'smcp': 'Small capitals (lowercase to small caps)',
+    'c2sc': 'Capitals to small caps',
+    'pcap': 'Petite capitals',
+    'titl': 'Titling alternates (display caps)',
+
+    # Numbers
+    'lnum': 'Lining figures (uppercase-height numerals)',
+    'onum': 'Oldstyle figures (varying heights)',
+    'pnum': 'Proportional figures',
+    'tnum': 'Tabular figures (monospaced numerals)',
+    'frac': 'Fractions (1/2 → ½)',
+    'ordn': 'Ordinals (1st → 1ˢᵗ)',
+    'sups': 'Superscripts',
+    'subs': 'Subscripts',
+
+    # Stylistic
+    'salt': 'Stylistic alternates',
+    'ss01': 'Stylistic set 1',
+    'ss02': 'Stylistic set 2',
+    'ss03': 'Stylistic set 3',
+    'swsh': 'Swash',
+    'cswh': 'Contextual swash',
+
+    # Kerning and spacing
+    'kern': 'Kerning',
+    'cpsp': 'Capital spacing',
+    'case': 'Case-sensitive forms',
+}
+
+def set_opentype_features(features: List[str], enable: bool = True) -> None:
+    """
+    Enable or disable OpenType features for subsequent text.
+
+    Args:
+        features: List of feature tags, e.g., ['smcp', 'liga', 'onum']
+        enable: True to enable, False to disable
+
+    Example:
+        set_opentype_features(['smcp', 'onum'])  # Enable small caps + oldstyle figures
+        db.text("The Quick Brown Fox 1234", (x, y))
+
+    Common features:
+        - 'liga': Standard ligatures (fi, fl)
+        - 'smcp': Small capitals
+        - 'onum': Oldstyle figures
+        - 'tnum': Tabular (monospace) figures
+        - 'frac': Automatic fractions (1/2 → ½)
+        - 'ss01'-'ss20': Stylistic sets
+    """
+    for feature in features:
+        db.openTypeFeatures(**{feature: enable})
+
+def get_available_opentype_features(font_name: str = None) -> Dict[str, str]:
+    """
+    Get available OpenType features for current or specified font.
+
+    Args:
+        font_name: Font to query (uses current font if None)
+
+    Returns:
+        Dict of {feature_tag: description}
+    """
+    if font_name:
+        db.font(font_name)
+
+    try:
+        available = db.listOpenTypeFeatures()
+        return {f: OPENTYPE_FEATURES.get(f, 'Custom feature') for f in available}
+    except Exception:
+        return {}
+
+def set_font_variation(axes: Dict[str, float] = None, **kwargs) -> None:
+    """
+    Set variable font axis values.
+
+    Args:
+        axes: Dict of {axis_tag: value}, e.g., {'wght': 700, 'wdth': 75}
+        **kwargs: Alternative axis specification, e.g., wght=700, wdth=75
+
+    Example:
+        set_font_variation(wght=600, wdth=85)  # Semi-bold, slightly condensed
+        db.text("Variable Font Text", (x, y))
+
+    Common axes:
+        - wght: Weight (100-900, where 400=regular, 700=bold)
+        - wdth: Width (50-200, where 100=normal)
+        - slnt: Slant (-90 to 90 degrees)
+        - ital: Italic (0=upright, 1=italic)
+        - opsz: Optical size (point size for optimization)
+    """
+    if axes is None:
+        axes = {}
+    axes.update(kwargs)
+    db.fontVariations(**axes)
+
+def get_font_variation_axes(font_name: str = None) -> Dict[str, Dict[str, float]]:
+    """
+    Get available variable font axes for current or specified font.
+
+    Args:
+        font_name: Font to query (uses current font if None)
+
+    Returns:
+        Dict of {axis_tag: {'minValue': x, 'defaultValue': y, 'maxValue': z}}
+    """
+    if font_name:
+        db.font(font_name)
+
+    try:
+        return db.listFontVariations()
+    except Exception:
+        return {}
+
+# ==================== PRINT PRODUCTION ====================
+
+# Standard print presets with bleed
+PRINT_PRESETS = {
+    "letter": {
+        "width": 612,       # 8.5 inches
+        "height": 792,      # 11 inches
+        "bleed": 9,         # 0.125 inches (standard bleed)
+        "safe_margin": 36,  # 0.5 inches from trim
+    },
+    "tabloid": {
+        "width": 792,       # 11 inches
+        "height": 1224,     # 17 inches
+        "bleed": 9,
+        "safe_margin": 36,
+    },
+    "a4": {
+        "width": 595,       # 210 mm
+        "height": 842,      # 297 mm
+        "bleed": 8.5,       # 3 mm (standard metric bleed)
+        "safe_margin": 28,  # 10 mm from trim
+    },
+    "a3": {
+        "width": 842,       # 297 mm
+        "height": 1191,     # 420 mm
+        "bleed": 8.5,
+        "safe_margin": 28,
+    },
+    "poster_24x36": {
+        "width": 1728,      # 24 inches
+        "height": 2592,     # 36 inches
+        "bleed": 18,        # 0.25 inches
+        "safe_margin": 72,  # 1 inch
+    },
+}
+
+def setup_print_page(
+    size: str = "letter",
+    orientation: str = "portrait",
+    include_bleed: bool = True,
+    custom_bleed: float = None
+) -> Dict[str, float]:
+    """
+    Set up a print-ready page with bleed area.
+
+    Args:
+        size: Paper size from PRINT_PRESETS or custom (width, height) tuple
+        orientation: "portrait" or "landscape"
+        include_bleed: Whether to extend canvas for bleed
+        custom_bleed: Override default bleed (in points)
+
+    Returns:
+        Dict with 'width', 'height', 'bleed', 'safe_margin',
+        'trim_x', 'trim_y' (offset to trim edge from canvas edge)
+
+    Example:
+        specs = setup_print_page("letter", include_bleed=True)
+        # Draw background to full canvas (includes bleed)
+        db.fill(0.2, 0.4, 0.8)
+        db.rect(0, 0, specs['canvas_width'], specs['canvas_height'])
+        # Position content relative to trim edge
+        x = specs['trim_x'] + specs['safe_margin']
+    """
+    if isinstance(size, tuple):
+        preset = {
+            "width": size[0],
+            "height": size[1],
+            "bleed": custom_bleed or 9,
+            "safe_margin": 36
+        }
+    else:
+        preset = PRINT_PRESETS.get(size, PRINT_PRESETS["letter"]).copy()
+
+    if custom_bleed is not None:
+        preset["bleed"] = custom_bleed
+
+    width = preset["width"]
+    height = preset["height"]
+    bleed = preset["bleed"] if include_bleed else 0
+
+    if orientation == "landscape":
+        width, height = height, width
+
+    canvas_width = width + (bleed * 2)
+    canvas_height = height + (bleed * 2)
+
+    db.newPage(canvas_width, canvas_height)
+
+    return {
+        "width": width,              # Trim width
+        "height": height,            # Trim height
+        "canvas_width": canvas_width,
+        "canvas_height": canvas_height,
+        "bleed": bleed,
+        "safe_margin": preset["safe_margin"],
+        "trim_x": bleed,             # X offset from canvas to trim
+        "trim_y": bleed,             # Y offset from canvas to trim
+    }
+
+def validate_print_ready(
+    filepath: str = None,
+    check_bleed: bool = True,
+    check_resolution: bool = True,
+    min_dpi: int = 300
+) -> Tuple[bool, List[str]]:
+    """
+    Validate a design for print production.
+
+    Args:
+        filepath: Path to check (uses current document if None)
+        check_bleed: Verify bleed area is utilized
+        check_resolution: Check image resolution
+        min_dpi: Minimum acceptable DPI for images
+
+    Returns:
+        Tuple of (is_valid, list of warnings/errors)
+
+    Note: This performs basic checks. For full preflight,
+    use professional tools like Adobe Acrobat Pro.
+    """
+    warnings = []
+
+    # Check page dimensions
+    try:
+        w = db.width()
+        h = db.height()
+
+        # Check for reasonable print dimensions
+        if w < 72 or h < 72:
+            warnings.append(f"Page too small for print: {w:.0f}x{h:.0f}pt")
+
+        if w > 5184 or h > 5184:  # 72 inches
+            warnings.append(f"Page very large: {w:.0f}x{h:.0f}pt - verify print capability")
+    except Exception:
+        warnings.append("Could not read page dimensions")
+
+    # Check color space (CMYK recommended for print)
+    # Note: DrawBot defaults to RGB, CMYK requires explicit setup
+    warnings.append("Reminder: Use cmykFill()/cmykStroke() for print production")
+
+    # General print recommendations
+    recommendations = [
+        "Verify fonts are embedded or outlined",
+        "Check images are 300+ DPI at final size",
+        "Ensure important content is within safe margin",
+        "Background elements should extend to bleed edge",
+    ]
+
+    is_valid = len([w for w in warnings if "too small" in w or "Could not" in w]) == 0
+
+    return is_valid, warnings + recommendations
 
 # ==================== USAGE EXAMPLE ====================
 

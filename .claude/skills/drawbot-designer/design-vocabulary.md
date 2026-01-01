@@ -6,6 +6,29 @@ Translation layer from natural language intent to concrete design decisions.
 
 ---
 
+## Aesthetic Directions (Bold Choices)
+
+Before mapping moods, consider committing to a distinct aesthetic tradition:
+
+| Direction | Grid | Type | Color | Texture | Energy |
+|-----------|------|------|-------|---------|--------|
+| **Swiss Modernism** | Strict 12-col, asymmetric | Helvetica, Akzidenz | Limited, high contrast | Clean, none | Ordered precision |
+| **Punk/Zine** | Broken, overlapping | Mixed sizes, ransom-note | Black + neon | Photocopy grain | Chaotic rebellion |
+| **Japanese Minimalism** | Open, asymmetric | One weight, generous space | Muted, single accent | Paper texture | Quiet tension |
+| **Constructivist** | Diagonal, dynamic | Bold sans, angled | Red, black, white | Rough | Revolutionary energy |
+| **Psychedelic** | Warped, radial | Flowing, decorative | Vibrating complementaries | Dense patterns | Overwhelming |
+| **Corporate Brutalist** | Simple, stark | Oversized, bold | Black + one color | None | Confrontational |
+| **Art Deco** | Symmetric, ornate | Geometric display | Gold, black, cream | Metallic | Glamorous |
+| **Bauhaus** | Geometric modules | Futura, geometric | Primary + black | None | Functional clarity |
+| **Vernacular** | Irregular, hand-drawn | Sign-painter, imperfect | Local, saturated | Painted texture | Authentic warmth |
+| **Tech Noir** | Dense, terminal | Monospace, technical | Dark + neon accent | Scanlines, noise | Dystopian edge |
+| **Editorial** | Multi-column, varied | Serif body, sans display | Sophisticated, limited | Paper quality | Intellectual calm |
+| **Organic/Natural** | Flowing, curved | Humanist, hand-drawn | Earth tones | Natural textures | Living movement |
+
+**Usage**: Pick ONE direction. Let it guide every subsequent choice.
+
+---
+
 ## Mood → Design Mapping
 
 ### "Modern" / "Contemporary"
@@ -348,10 +371,45 @@ Result:
 
 ---
 
+## Anti-Patterns (What to Avoid)
+
+### Signs of "Template Design"
+These indicate lack of intentionality:
+
+| Pattern | Problem | Fix |
+|---------|---------|-----|
+| Everything centered | Static, lifeless | Introduce asymmetry |
+| Equal margins all around | No hierarchy | Vary margins intentionally |
+| Blue/purple gradient | AI cliché | Any other palette |
+| Helvetica + Open Sans | Overused pairing | Bolder font choices |
+| Perfect geometric shapes | Clip-art feel | Organic or custom forms |
+| Text all same size | No hierarchy | Use the scale properly |
+| Evenly distributed colors | No focal point | 70-20-10 rule |
+
+### The "Could Be Anyone's" Test
+If your design could work for any company/event/purpose, it lacks identity.
+Ask: "What about this is specific to THIS context?"
+
+### Font Defaults to Avoid
+❌ Inter, Roboto, Open Sans, Montserrat, Poppins (overused in AI output)
+❌ Arial, Calibri (default system fonts)
+❌ Papyrus, Comic Sans (obviously)
+
+### Color Defaults to Avoid
+❌ `#6B5BFF` → `#F5F5FF` (purple gradient on white)
+❌ `#667EEA` → `#764BA2` (blue-purple gradient)
+❌ `#4A90A4` (generic "tech blue")
+
+---
+
 ## Remember
 
-1. **Mood first** - Establish the feeling before details
-2. **Content structure second** - Layout follows information hierarchy
-3. **Refinement last** - Adjust based on feedback
+1. **Aesthetic direction first** - Commit to a bold tradition
+2. **Mood second** - Refine within that direction
+3. **Content structure third** - Layout follows information hierarchy
+4. **Refinement last** - Adjust based on feedback
+5. **Check for anti-patterns** - Avoid the "AI look"
 
 The design system handles the "how" (grids, scales, wrapping). This vocabulary handles the "what" (which settings express the intent).
+
+**The goal isn't just correctness—it's memorability.**
