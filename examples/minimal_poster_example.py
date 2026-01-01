@@ -93,8 +93,7 @@ draw_wrapped_text(
 
 # Footer (row 0)
 db.fontSize(scale.caption)
-db.fill(*colors["text"])
-db.fill(0.5, 0.5, 0.5)
+db.fill(0.5, 0.5, 0.5)  # Gray for footer
 db.text("Footer Info", (grid[(0, 0)][0] + 10, grid[(0, 0)][1] + 10))
 
 # ==================== DEBUG (optional) ====================

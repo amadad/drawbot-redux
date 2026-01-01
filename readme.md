@@ -49,7 +49,7 @@ drawbot-redux/
 │   ├── typography-style-guide.md
 │   └── layout-design-principles.md
 │
-├── mcp/                      # MCP server for Claude Desktop
+├── evolutionary_drawbot/     # Parametric form evolution system
 └── output/                   # Generated files (gitignored)
 ```
 
