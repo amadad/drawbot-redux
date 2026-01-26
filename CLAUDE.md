@@ -10,6 +10,13 @@ drawbot preview script.py         # Render + open
 drawbot watch script.py           # Hot reload
 drawbot new poster --template grid  # Scaffold
 drawbot from-spec poster.yaml     # YAML spec
+
+# Evolutionary forms
+drawbot evolve init               # Initialize
+drawbot evolve gen0 -n 16         # Generate population
+drawbot evolve select gen_000 -w 1,2,3  # Select winners
+drawbot evolve breed gen_000      # Breed next gen
+drawbot evolve status             # Show status
 ```
 
 ## Quick Reference
@@ -60,7 +67,10 @@ db.saveImage(str(get_output_path("poster.pdf")))
 ## Structure
 
 ```
-cli/           # CLI (drawbot command)
+cli/
+  main.py      # CLI entry point
+  spec.py      # YAML spec renderer
+  evolve/      # Evolutionary form generation
 lib/           # Design system
 examples/      # Examples
 docs/          # guide.md, api.md
