@@ -525,8 +525,7 @@ db.saveImage(str(output))
 
 ## See Also
 
-- `drawbot_grid.py` - Grid system implementation
-- `drawbot_design_system.py` - Design system source
-- `longitudinalbench_poster_v7.py` - Complete example
-- `docs/layout-design-principles.md` - Design theory
-- `docs/typography-style-guide.md` - Typography rules
+- `lib/drawbot_grid.py` - Grid system implementation
+- `lib/drawbot_design_system.py` - Design system source
+- `docs/api.md` - DrawBot API reference
+- `examples/` - Example scripts

@@ -1,0 +1,71 @@
+# Example YAML Poster Specification
+# Render with: drawbot from-spec examples/example_spec.yaml
+
+page:
+  format: letter
+  margins: 72
+
+typography:
+  scale: poster
+  title_font: Helvetica Bold
+  body_font: Helvetica
+
+grid:
+  columns: 12
+  rows: 8
+
+# Variables for interpolation - override with --set
+variables:
+  title: "HELLO WORLD"
+  subtitle: "A declarative poster"
+  body: "This poster was created using a YAML specification file. No Python required - just define your layout declaratively and render."
+  colors:
+    primary: "#1a1a1a"
+    accent: "#FF5500"
+    text: "#FFFFFF"
+
+elements:
+  # Background
+  - type: rect
+    grid: [0, 0, 12, 8]
+    fill: "#f5f5f5"
+
+  # Header bar
+  - type: rect
+    grid: [0, 6, 12, 2]
+    fill: "${colors.primary}"
+
+  # Accent stripe
+  - type: rect
+    grid: [0, 5, 12, 1]
+    fill: "${colors.accent}"
+
+  # Title
+  - type: text
+    content: "${title}"
+    grid: [1, 6, 10, 1]
+    style: title
+    color: "${colors.text}"
+    wrap: false
+
+  # Subtitle
+  - type: text
+    content: "${subtitle}"
+    grid: [1, 5, 10, 1]
+    style: h2
+    color: "#FFFFFF"
+    wrap: false
+
+  # Body text
+  - type: text
+    content: "${body}"
+    grid: [1, 1, 10, 3]
+    style: body
+    color: "#333333"
+
+  # Decorative circle
+  - type: oval
+    grid: [9, 2, 2, 2]
+    fill: "${colors.accent}"
+
+output: example_from_spec.pdf

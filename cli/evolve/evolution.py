@@ -7,7 +7,6 @@ new generations of forms.
 
 import random
 from typing import List, Dict, Tuple, Optional
-from dataclasses import replace
 
 from .genome import FormGenome
 from .parameters import ParameterSpec, DEFAULT_SPECS

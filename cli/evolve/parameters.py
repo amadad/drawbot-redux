@@ -5,7 +5,7 @@ Parameters are stored normalized to [0..1] internally for clean breeding math,
 but can be converted to/from actual ranges for rendering.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, Any, Union
 from pathlib import Path
 import json

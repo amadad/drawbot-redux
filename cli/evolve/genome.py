@@ -5,7 +5,7 @@ Genomes store normalized [0..1] parameter values, making breeding math simple.
 Each genome has a unique ID, seed for reproducibility, and optional lineage info.
 """
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from typing import Dict, Optional, Tuple, List, Any
 import json
 import random

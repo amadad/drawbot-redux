@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import Tuple, Dict, Any, Optional, List
 
 from .genome import FormGenome
-from .parameters import DEFAULT_SPECS, ParameterSpec, load_specs_from_config
-from .form_generators import GENERATORS
+from .parameters import DEFAULT_SPECS, ParameterSpec
+from .generators import GENERATORS
 
 
 # Lazy DrawBot import

@@ -36,6 +36,7 @@ assets/
 # AI agent memory
 .goose/
 .aider*
+.codex/
 
 # IDE
 .vscode/

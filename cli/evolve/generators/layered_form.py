@@ -220,7 +220,7 @@ def _get_accent_points(
             point = path.pointOnContour(0, t)
             if point:
                 points.append(point)
-        except:
+        except (AttributeError, IndexError, TypeError):
             # Fallback: use path bounds corners
             bounds = _get_path_bounds(path)
             if bounds:

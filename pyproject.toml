@@ -37,11 +37,22 @@ fonts = [
     "compositor",
 ]
 
+# CLI tools
+cli = [
+    "typer[all]>=0.15.0",
+    "watchfiles>=1.0.0",
+    "pyyaml>=6.0",
+    "pydantic>=2.0",
+]
+
 # Development tools
 dev = [
     "black>=25.1.0",
     "pytest>=8.0.0",
 ]
+
+[project.scripts]
+drawbot = "cli.main:app"
 
 [tool.uv.sources]
 drawbotgrid = { git = "https://github.com/mathieureguer/drawbotgrid" }
@@ -55,6 +66,13 @@ ufo-extractor = { git = "https://github.com/robotools/extractor" }
 testpaths = ["tests"]
 pythonpath = ["lib"]
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["cli", "lib"]
+
 [tool.basedpyright]
-extraPaths = ["lib"]
+extraPaths = ["lib", "cli"]
 pythonVersion = "3.11"

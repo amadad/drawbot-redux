@@ -11,7 +11,7 @@ from typing import List, Tuple, Dict, Any, Optional
 
 from .genome import FormGenome
 from .parameters import DEFAULT_SPECS, ParameterSpec
-from .form_generators import GENERATORS
+from .generators import GENERATORS
 
 
 # Lazy DrawBot import
